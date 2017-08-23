@@ -23,4 +23,4 @@ test:
 	go test
 
 clean:
-	rm $(Build)
+	rm -rf $(Build)
