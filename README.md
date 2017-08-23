@@ -13,3 +13,5 @@ With Go:
 ```
 go install github.com/yowcow/vim-ver
 ```
+
+Or download binary executable from [releases](https://github.com/yowcow/vim-ver/releases), and place it in `$PATH`.
