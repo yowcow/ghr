@@ -6,24 +6,26 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 )
 
-var XMLURL = "https://github.com/vim/vim/releases.atom"
+var xmlURL = "https://github.com/vim/vim/releases.atom"
+var modeRe = regexp.MustCompile(`\AHEAD(\^*)`)
 
 func main() {
 	args := os.Args
 
 	if len(args) <= 1 {
-		fmt.Fprintln(os.Stdout, "Usage:", args[0], "latest")
-	} else if args[1] == "latest" {
-		doLatest()
+		fmt.Fprintln(os.Stdout, "Usage:", args[0], "HEAD^^^^")
+	} else if result := modeRe.FindStringSubmatch(args[1]); result != nil {
+		printVersionBeforeHead(len(result[1]))
 	} else {
 		fmt.Fprintln(os.Stderr, "Unknown mode:", args[1])
 	}
 }
 
-func doLatest() {
-	d, err := fetchXML(XMLURL)
+func printVersionBeforeHead(n int) {
+	d, err := fetchXML(xmlURL)
 
 	if err != nil {
 		panic(err)
@@ -34,10 +36,10 @@ func doLatest() {
 	if err != nil {
 		panic(err)
 	} else if len(entries) == 0 {
-		panic(errors.New("No release found!  Something should be wrong!"))
+		panic(errors.New("no valid release found"))
 	}
 
-	printVersion(entries[0])
+	printVersion(entries[n])
 }
 
 func printVersion(entry Entry) {
@@ -57,7 +59,7 @@ func fetchXML(url string) ([]byte, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("Expected status code 200 but got %d", resp.StatusCode))
+		return nil, fmt.Errorf("expected status code 200 but got %d", resp.StatusCode)
 	}
 
 	return ioutil.ReadAll(resp.Body)
