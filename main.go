@@ -11,14 +11,19 @@ import (
 	"github.com/yowcow/vimver/xmlparser"
 )
 
-var xmlURL = "https://github.com/vim/vim/releases.atom"
-var modeRe = regexp.MustCompile(`\AHEAD(\^*)`)
+var (
+	xmlURL  = "https://github.com/vim/vim/releases.atom"
+	modeRe  = regexp.MustCompile(`\AHEAD(\^*)`)
+	Version = "x.x.x"
+)
 
 func main() {
 	args := os.Args
 
 	if len(args) <= 1 {
 		fmt.Fprintln(os.Stdout, "Usage:", args[0], "HEAD^^^^")
+	} else if args[1] == "version" {
+		fmt.Printf("vimver %s\n", Version)
 	} else if result := modeRe.FindStringSubmatch(args[1]); result != nil {
 		printVersionBeforeHead(len(result[1]))
 	} else {
