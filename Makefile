@@ -20,7 +20,7 @@ $(LinuxBuild)/$(Binary):
 	GOOS=linux GOARCH=amd64 go build -o $@
 
 test:
-	go test
+	go test ./...
 
 clean:
 	rm -rf $(Build)
