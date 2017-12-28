@@ -1,26 +1,30 @@
-.PHONY: test
+BUILD = _build
 
-Build := _build
-DarwinBuild := $(Build)/darwin-amd64
-LinuxBuild := $(Build)/linux-amd64
-Binary := vim-ver
+OS = linux darwin
+BIN = vimver $(foreach os,$(OS),$(BUILD)/$(os)/vimver)
+ARCHIVE = $(foreach os,$(OS),$(BUILD)/vimver-$(os).tar.gz)
 
-all: $(DarwinBuild).tar.gz $(LinuxBuild).tar.gz
+all:
+	$(MAKE) -j 4 $(BIN)
 
-$(DarwinBuild).tar.gz: $(DarwinBuild)/$(Binary)
-	tar czf $@ $<
+$(BUILD)/vimver-%.tar.gz: $(BUILD)/%/vimver
+	cd $(dir $<) && \
+		tar czf $(notdir $@) $(notdir $<)
 
-$(LinuxBuild).tar.gz: $(LinuxBuild)/$(Binary)
-	tar czf $@ $<
+$(BUILD)/%/vimver:
+	mkdir -p $(dir $@)
+	GOOS=$* GOARCH=amd64 go build -ldflags '-X main.Version=$(VERSION)' -o $@
 
-$(DarwinBuild)/$(Binary):
-	GOOS=darwin GOARCH=amd64 go build -o $@
+vimver:
+	go build -ldflags '-X main.Version=$(VERSION)'
 
-$(LinuxBuild)/$(Binary):
-	GOOS=linux GOARCH=amd64 go build -o $@
+archive:
+	$(MAKE) -j 4 $(ARCHIVE)
 
 test:
-	go test
+	go test ./...
 
 clean:
-	rm -rf $(Build)
+	rm -rf $(BIN) $(ARCHIVE)
+
+.PHONY: all archive test clean

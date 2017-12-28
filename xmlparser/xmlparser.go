@@ -1,4 +1,4 @@
-package main
+package xmlparser
 
 import (
 	"encoding/xml"
@@ -18,10 +18,8 @@ type Atom struct {
 
 func ParseAtom(data []byte) ([]Entry, error) {
 	var atom = new(Atom)
-
 	if err := xml.Unmarshal(data, &atom); err != nil {
 		return nil, err
 	}
-
 	return atom.Entries, nil
 }

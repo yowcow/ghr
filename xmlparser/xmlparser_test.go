@@ -1,4 +1,4 @@
-package main
+package xmlparser
 
 import (
 	"testing"
@@ -68,7 +68,6 @@ func Test_ParseAtom_returns_3_elements(t *testing.T) {
 	if err != nil {
 		t.Error("Expected nil but got", err)
 	}
-
 	if len := len(entries); len != 3 {
 		t.Error("Expected 3 elements but got", len)
 	}
@@ -81,7 +80,6 @@ func Test_ParseAtom_returns_error(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error but got", err)
 	}
-
 	if entries != nil {
 		t.Error("Expected nil but got", entries)
 	}
