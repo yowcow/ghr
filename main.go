@@ -27,11 +27,6 @@ func main() {
 	flag.BoolVar(&version, "version", false, "print version")
 	flag.Parse()
 
-	if repo == "" {
-		flag.Usage()
-		os.Exit(1)
-	}
-
 	if help {
 		flag.Usage()
 		os.Exit(0)
@@ -40,6 +35,11 @@ func main() {
 	if version {
 		fmt.Println(Version)
 		os.Exit(0)
+	}
+
+	if repo == "" {
+		flag.Usage()
+		os.Exit(1)
 	}
 
 	head := os.Args[len(os.Args)-1]
