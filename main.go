@@ -2,55 +2,86 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
 
-	"github.com/yowcow/vimver/xmlparser"
+	"github.com/yowcow/ghr/xmlparser"
 )
 
 var (
-	xmlURL  = "https://github.com/vim/vim/releases.atom"
 	modeRe  = regexp.MustCompile(`\AHEAD(\^*)`)
 	Version = "x.x.x"
 )
 
 func main() {
-	args := os.Args
+	var repo string
+	var help bool
+	var version bool
 
-	if len(args) <= 1 {
-		fmt.Fprintln(os.Stdout, "Usage:", args[0], "HEAD^^^^")
-	} else if args[1] == "version" {
-		fmt.Printf("vimver %s\n", Version)
-	} else if result := modeRe.FindStringSubmatch(args[1]); result != nil {
-		printVersionBeforeHead(len(result[1]))
-	} else {
-		fmt.Fprintln(os.Stderr, "Unknown mode:", args[1])
+	flag.StringVar(&repo, "repo", "", "GitHub repository name, e.g., vim/vim")
+	flag.BoolVar(&help, "help", false, "print help")
+	flag.BoolVar(&version, "version", false, "print version")
+	flag.Parse()
+
+	if repo == "" {
+		flag.Usage()
+		os.Exit(1)
 	}
+
+	if help {
+		flag.Usage()
+		os.Exit(0)
+	}
+
+	if version {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
+
+	head := os.Args[len(os.Args)-1]
+	if !modeRe.MatchString(head) {
+		fmt.Println("specify HEAD, HEAD^, HEAD^^, or similar")
+		os.Exit(2)
+	}
+
+	result := modeRe.FindStringSubmatch(head)
+	v, err := getVersionBeforeHead(repo, len(result[1]))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(3)
+	}
+
+	fmt.Println(v)
 }
 
-func printVersionBeforeHead(n int) {
-	d, err := fetchXML(xmlURL)
+func xmlURL(repo string) string {
+	return fmt.Sprintf("https://github.com/%s/releases.atom", repo)
+}
+
+func getVersionBeforeHead(repo string, n int) (string, error) {
+	d, err := fetchXML(xmlURL(repo))
 	if err != nil {
 		panic(err)
 	}
 
 	entries, err := xmlparser.ParseAtom(d)
 	if err != nil {
-		panic(err)
+		return "", err
 	} else if len(entries) == 0 {
-		panic(errors.New("no valid release found"))
+		return "", errors.New("no valid release found")
 	}
 
-	printVersion(entries[n])
+	return getVersionString(repo, entries[n]), nil
 }
 
-func printVersion(entry xmlparser.Entry) {
-	var version string
-	fmt.Sscanf(entry.Link.URL, "/vim/vim/releases/tag/v%s", &version)
-	fmt.Println(version)
+func getVersionString(repo string, entry xmlparser.Entry) string {
+	var v string
+	fmt.Sscanf(entry.Link.URL, "/"+repo+"/releases/tag/v%s", &v)
+	return v
 }
 
 func fetchXML(url string) ([]byte, error) {

@@ -1,21 +1,21 @@
 BUILD = _build
 
 OS = linux darwin
-BIN = vimver $(foreach os,$(OS),$(BUILD)/$(os)/vimver)
-ARCHIVE = $(foreach os,$(OS),$(BUILD)/vimver-$(os).tar.gz)
+BIN = ghr $(foreach os,$(OS),$(BUILD)/$(os)/ghr)
+ARCHIVE = $(foreach os,$(OS),$(BUILD)/ghr-$(os).tar.gz)
 
 all:
 	$(MAKE) -j 4 $(BIN)
 
-$(BUILD)/vimver-%.tar.gz: $(BUILD)/%/vimver
+$(BUILD)/ghr-%.tar.gz: $(BUILD)/%/ghr
 	cd $(dir $<) && \
 		tar czf $(notdir $@) $(notdir $<)
 
-$(BUILD)/%/vimver:
+$(BUILD)/%/ghr:
 	mkdir -p $(dir $@)
 	GOOS=$* GOARCH=amd64 go build -ldflags '-X main.Version=$(VERSION)' -o $@
 
-vimver:
+ghr:
 	go build -ldflags '-X main.Version=$(VERSION)'
 
 archive:

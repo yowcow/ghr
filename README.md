@@ -1,9 +1,9 @@
-[![Build Status](https://travis-ci.org/yowcow/vimver.svg?branch=master)](https://travis-ci.org/yowcow/vimver)
+[![Build Status](https://travis-ci.org/yowcow/ghr.svg?branch=master)](https://travis-ci.org/yowcow/ghr)
 
-VimVer
-======
+GHR
+===
 
-A small binary to find Vim version string from CLI.
+A tool to fetch a release version string from GitHub releases.
 
 HOW TO INSTALL
 --------------
@@ -11,10 +11,10 @@ HOW TO INSTALL
 With Go:
 
 ```
-go install github.com/yowcow/vimver
+go install github.com/yowcow/ghr
 ```
 
-Or download binary executable from [releases](https://github.com/yowcow/vimver/releases), and place it in `$PATH`.
+Or download binary executable from [releases](https://github.com/yowcow/ghr/releases), and place it in `$PATH`.
 
 HOW TO USE
 ----------
@@ -22,11 +22,11 @@ HOW TO USE
 To print the latest Vim version, do:
 
 ```
-vimver HEAD
+ghr -repo vim/vim HEAD
 ```
 
 To print the version 3 releases prior to the latest, do:
 
 ```
-vimver HEAD^^^
+ghr -repo vim/vim HEAD^^^
 ```
