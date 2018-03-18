@@ -7,16 +7,15 @@ script:
   - make test
 
 before_deploy:
-  - make VERSION=$TRAVIS_TAG
-  - make archive
+  - make -j 2 _build/linux-am64/ghr-${TRAVIS_TAG}-linux-amd64.tar.gz _build/darwin-amd64/ghr-${TRAVIS_TAG}-darwin-amd64.tar.gz
 
 deploy:
   provider: releases
   api_key:
     secure: KPC50wGcpvt54WNnQ7pnPUbRnCGHUY1uT+W0KH46CAmQ2d0Dwqvpv/tBPGa1UUh7Sqgqb95P7OiTQPZDCt6B6Kul0xN767Ndbj8pdi1HkdQioranuBpapthaBRck+qRsFZrGXsMFT1FzssDlGDcpFl2IhkkHVaggqKDnRVO8OwUADjrIiFNDOv2Kuz+ckedffWNywn4N3529WsnMhCcfuLIR/bZ5cyyDqpY2jPMK9GeHwMC3ayq5GMTEvD95dOFJ679NPc4eENa+8OGE+97NsTUdaGKmGrXBjRfxFP4ySCl+oi1BpvTX22id+JXv1hllP7TaQc5vjZTr5wpRBQ/X3z4gCVYw594kpCiBdI2AtzHE/iB9d5TaB8weJ09IHXc8O0ndVdJ8MMTCs2LjiL71FcZXxzXXTiKpfYP+K+pBtAfId8DKpr6JybDMzgYb20/8W155Npv1mlHrfDSh3zSxVTNodi++vz1pbTPKbiqAl3VYdLiL3mkQs285XGL8FQB6UjTYAVvH1M32RrrGSu92jad2GCvyqG+xSggqYt2zcg7CCMi/kEGVOHcS6z1tIj+SX/fJARtyYvMYFHynvELLauxA7M1T1RxGeebTU3pbyMzSYlUHEIah/Xb52tumQUnEc6FsD6WiHMQigICXy2+NDHsw5NfO9F+WLRXrkmqG5+Q=
   file:
-    - _build/linux/ghr-linux.tar.gz
-    - _build/darwin/ghr-darwin.tar.gz
+    - _build/ghr-${TRAVIS_TAG}-linux-amd64.tar.gz
+    - _build/ghr-${TRAVIS_TAG}-darwin-amd64.tar.gz
   skip_cleanup: true
   on:
     tags: true
