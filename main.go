@@ -80,7 +80,7 @@ func getVersionBeforeHead(repo string, n int) (string, error) {
 
 func getVersionString(repo string, entry xmlparser.Entry) string {
 	var v string
-	fmt.Sscanf(entry.Link.URL, "/"+repo+"/releases/tag/v%s", &v)
+	fmt.Sscanf(entry.Link.URL, "https://github.com/"+repo+"/releases/tag/v%s", &v)
 	return v
 }
 
