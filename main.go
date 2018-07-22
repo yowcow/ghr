@@ -16,14 +16,17 @@ var (
 	modeRe  = regexp.MustCompile(`\AHEAD(\^*)`)
 	Version = "x.x.x"
 )
+var (
+	repo    string
+	help    bool
+	verbose bool
+	version bool
+)
 
-func main() {
-	var repo string
-	var help bool
-	var version bool
-
+func init() {
 	flag.StringVar(&repo, "repo", "", "GitHub repository name, e.g., vim/vim")
 	flag.BoolVar(&help, "help", false, "print help")
+	flag.BoolVar(&verbose, "verbose", false, "verbose")
 	flag.BoolVar(&version, "version", false, "print version")
 	flag.Parse()
 
@@ -41,7 +44,9 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+}
 
+func main() {
 	head := os.Args[len(os.Args)-1]
 	if !modeRe.MatchString(head) {
 		fmt.Println("specify HEAD, HEAD^, HEAD^^, or similar")
@@ -67,6 +72,9 @@ func getVersionBeforeHead(repo string, n int) (string, error) {
 	if err != nil {
 		panic(err)
 	}
+	if verbose {
+		fmt.Println(string(d))
+	}
 
 	entries, err := xmlparser.ParseAtom(d)
 	if err != nil {
@@ -74,13 +82,16 @@ func getVersionBeforeHead(repo string, n int) (string, error) {
 	} else if len(entries) == 0 {
 		return "", errors.New("no valid release found")
 	}
+	if verbose {
+		fmt.Println(entries)
+	}
 
 	return getVersionString(repo, entries[n]), nil
 }
 
 func getVersionString(repo string, entry xmlparser.Entry) string {
 	var v string
-	fmt.Sscanf(entry.Link.URL, "https://github.com/"+repo+"/releases/tag/v%s", &v)
+	fmt.Sscanf(entry.Link.URL, "https://github.com/"+repo+"/releases/tag/%s", &v)
 	return v
 }
 
@@ -94,5 +105,6 @@ func fetchXML(url string) ([]byte, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("expected status code 200 but got %d", resp.StatusCode)
 	}
+
 	return ioutil.ReadAll(resp.Body)
 }
