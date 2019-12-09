@@ -1,10 +1,10 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -47,30 +47,10 @@ func init() {
 }
 
 func main() {
-	head := os.Args[len(os.Args)-1]
-	if !modeRe.MatchString(head) {
-		fmt.Println("specify HEAD, HEAD^, HEAD^^, or similar")
-		os.Exit(2)
-	}
-
-	result := modeRe.FindStringSubmatch(head)
-	v, err := getVersionBeforeHead(repo, len(result[1]))
+	url := xmlURL(repo)
+	d, err := fetchXML(url)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(3)
-	}
-
-	fmt.Println(v)
-}
-
-func xmlURL(repo string) string {
-	return fmt.Sprintf("https://github.com/%s/releases.atom", repo)
-}
-
-func getVersionBeforeHead(repo string, n int) (string, error) {
-	d, err := fetchXML(xmlURL(repo))
-	if err != nil {
-		panic(err)
+		log.Fatalln("failed fetching XML:", err)
 	}
 	if verbose {
 		fmt.Println(string(d))
@@ -78,15 +58,32 @@ func getVersionBeforeHead(repo string, n int) (string, error) {
 
 	entries, err := xmlparser.ParseAtom(d)
 	if err != nil {
-		return "", err
+		log.Fatalln("failed parsing XML:", err)
 	} else if len(entries) == 0 {
-		return "", errors.New("no valid release found")
+		log.Fatalln("no valid release found for", url)
 	}
 	if verbose {
 		fmt.Println(entries)
 	}
 
-	return getVersionString(repo, entries[n]), nil
+	head := os.Args[len(os.Args)-1]
+	if modeRe.MatchString(head) {
+		matched := modeRe.FindStringSubmatch(head)
+		idx := len(matched[1])
+		if len(entries) < idx+1 {
+			log.Fatalln("no version for specified", head)
+			fmt.Println(getVersionString(repo, entries[idx]))
+		}
+		return
+	}
+
+	for _, entry := range entries {
+		fmt.Println(getVersionString(repo, entry))
+	}
+}
+
+func xmlURL(repo string) string {
+	return fmt.Sprintf("https://github.com/%s/releases.atom", repo)
 }
 
 func getVersionString(repo string, entry xmlparser.Entry) string {
